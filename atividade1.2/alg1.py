@@ -86,10 +86,22 @@ sobel_y = np.array([[1, 2,  1],
                     [-1,-2,-2]])
 
 
-
-#Lendo uma imagem de um arquivo e transformando em escala de cinza
+#Lendo imagem e convertendo para grayscale
 im_original = Image.open("imagem.jpg")
 im_original = im_original.convert("L")
+
+"""
+x,y = 500,500
+#Criando uma imagem com dimensões x e y com todos os pixels brancos 
+im_original = Image.new("L", (500,500), 255)
+
+#Todas as bordas terão preto
+for i in range(500):
+    im_original.putpixel((i,0), 0)
+    im_original.putpixel((i, y-1), 0)
+    im_original.putpixel((0,1), 0)
+    im_original.putpixel((x-1, i), 0)
+"""
 
 im = im_original.filter(ImageFilter.GaussianBlur(2))
 
@@ -108,6 +120,4 @@ c = somar_imagens(a,b)
 
 d = aplicar_threshold(c,0.5)
 
-
 d.show()
-
