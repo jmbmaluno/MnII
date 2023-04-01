@@ -1,7 +1,7 @@
 #A biblioteca PIL -> criar e tratar as imagens
 #A biblioteca numpy -> manipular arrays
 
-from PIL import Image
+from PIL import Image, ImageFilter
 import numpy as np
 
 
@@ -31,20 +31,50 @@ def aplicar_filtro(kernel, im):
                     else:
                         soma = soma + im.getpixel((i - 1 + xkernel, j - 1 + ykernel)) * kernel[xkernel][ykernel]
             
-            
-            #elimiando os valores negativos
-            if soma < 0:
-                soma = 0
-            
-            #limpando os valores que passaram de 255(valor max)
-            if soma > 255:
-                soma = 255
-            
-            #Atribuindo o valor do filtro em out na posição i e j
+           #Atribuindo o valor do filtro em out na posição i e j
             out.putpixel((i,j),int(soma)) 
 
     return out
 
+#Elevando ao quadrado cada valor da imagem a
+def elevar_ao_quadrado(a):
+    x,y = a.size
+
+    for i in range(x):
+        for j in range(y):
+            k = a.getpixel((i,j))
+
+            a.putpixel((i,j), int(k*k))
+
+
+#Cria uma imagem C que é a soma de A e B
+def somar_imagens(a,b):
+    x,y = a.size
+    c = Image.new("L", (x,y))
+
+    for i in range(x):
+        for j in range(y):
+            valor = a.getpixel((i,j)) + b.getpixel((i,j))
+            c.putpixel((i,j), int(valor))
+    
+    return c
+
+#Todo valor que for maior que ts será 1 (255)
+#Todo valor que for menor que ts será 0 (0)
+def aplicar_threshold(im,ts):
+    x,y = im.size
+    d = Image.new("L", (x,y))
+
+    for i in range(x):
+        for j in range(y):
+            if im.getpixel((i,j)) > ts*255:
+                d.putpixel((i,j), 255)
+
+    return d
+
+
+
+#-------MAIN-------#
 
 #Criando os filtros sobel 3x3
 sobel_x = np.array([[-1, 0, 1],
@@ -56,16 +86,28 @@ sobel_y = np.array([[1, 2,  1],
                     [-1,-2,-2]])
 
 
+
 #Lendo uma imagem de um arquivo e transformando em escala de cinza
-im = Image.open("imagem.jpg")
-im = im.convert("L")
+im_original = Image.open("imagem.jpg")
+im_original = im_original.convert("L")
+
+im = im_original.filter(ImageFilter.GaussianBlur(2))
+
 
 #Criando a imagem a e aplicando o filtro sobel_x em im
 a = aplicar_filtro(sobel_x,im)
-
 #Criando a imagem b e aplicando o filtro sobel_y em im
 b = aplicar_filtro(sobel_y,im)
 
-#imprimindo as imagens na tela
-a.show()
-b.show()
+elevar_ao_quadrado(a)
+elevar_ao_quadrado(b)
+
+
+c = somar_imagens(a,b)
+
+
+d = aplicar_threshold(c,0.5)
+
+
+d.show()
+
